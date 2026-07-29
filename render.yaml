@@ -1,0 +1,40 @@
+# Render дээр "New Blueprint" хэсэгт GitHub repo-гоо холбоод ачаалахад
+# доорх бүх нөөцийг (Web Service + managed PostgreSQL) автоматаар үүсгэнэ.
+# Cloudinary болон Stripe-ийг гараар Render Dashboard → Environment хэсэгт нэмэх шаардлагатай
+# (эдгээр нь гуравдагч этгээдийн үйлчилгээ тул Blueprint-д автоматжуулах боломжгүй).
+
+services:
+  - type: web
+    name: luma-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: starter
+    region: singapore
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: luma-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: FRONTEND_URL
+        sync: false   # Render Dashboard дээр гараар бодит frontend domain-аа оруулна
+      # Дараах утгуудыг Render Dashboard-ийн Environment хэсэгт ГАРААР нэмнэ:
+      # CLOUD_NAME, CLOUD_API_KEY, CLOUD_API_SECRET,
+      # STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET,
+      # STRIPE_PREMIUM_PRICE_ID, STRIPE_BOOST_PRICE_ID, APP_BASE_URL
+
+databases:
+  - name: luma-db
+    plan: starter
+    region: singapore
+    postgresMajorVersion: "16"

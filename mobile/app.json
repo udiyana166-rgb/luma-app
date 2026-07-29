@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "Luma",
+    "slug": "luma",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#FFF8FB"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Luma-д профайл зураг оруулахын тулд зургийн санд хандах шаардлагатай."
+      }
+    },
+    "android": {
+      "permissions": ["READ_EXTERNAL_STORAGE"]
+    }
+  }
+}

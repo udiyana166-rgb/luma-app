@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luma 💗</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --bg:#FFF8FB; --card:#FFFFFF; --primary:#FF5C8D; --primary-dark:#E8447A;
+    --text:#222222; --muted:#888888; --line:#F0DDE4; --good:#2FAE6B;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
+  body{font-family:'Poppins',sans-serif; background:var(--bg); color:var(--text);}
+  #luma-app{
+    min-height:100vh; max-width:460px; margin:0 auto; background:var(--bg);
+    display:flex; flex-direction:column; position:relative;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .screen{display:none;flex-direction:column;flex:1;min-height:100vh;}
+  .screen.active{display:flex;}
+
+  #screen-config{padding:40px 24px;}
+  #screen-config .field input{width:100%;padding:12px;border-radius:10px;border:1.5px solid var(--line);margin-bottom:12px;font-size:14px;}
+  #screen-config .card-box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;}
+
+  #screen-auth{padding:56px 28px 32px;justify-content:center;align-items:center;text-align:center;}
+  .logo{font-size:42px;font-weight:800;color:var(--primary);margin-bottom:4px;}
+  .tagline{color:var(--muted);font-size:13px;margin-bottom:30px;}
+  .auth-toggle{display:flex;gap:4px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:4px;margin-bottom:24px;width:100%;max-width:340px;}
+  .auth-toggle button{flex:1;background:none;border:none;color:var(--muted);padding:11px;border-radius:10px;font-weight:600;font-size:13px;cursor:pointer;font-family:'Poppins';}
+  .auth-toggle button.active{background:var(--primary);color:#fff;}
+  .field{width:100%;max-width:340px;text-align:left;margin-bottom:14px;}
+  .field label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em;font-weight:600;}
+  .field input, .field textarea{width:100%;background:#fff;border:1.5px solid var(--line);color:var(--text);padding:13px 14px;border-radius:12px;font-size:15px;outline:none;font-family:'Poppins';}
+  .field input:focus, .field textarea:focus{border-color:var(--primary);}
+  .field-hint{font-size:11px;color:var(--muted);margin-top:5px;}
+  .btn-primary{width:100%;max-width:340px;background:var(--primary);color:#fff;border:none;padding:15px;border-radius:30px;font-weight:700;font-size:15px;cursor:pointer;margin-top:6px;box-shadow:0 8px 20px rgba(255,92,141,0.35);font-family:'Poppins';}
+  .btn-primary:disabled{opacity:0.5;box-shadow:none;}
+  .btn-secondary{width:100%;max-width:340px;background:none;color:var(--muted);border:1.5px solid var(--line);padding:13px;border-radius:30px;font-weight:600;font-size:14px;cursor:pointer;margin-top:10px;font-family:'Poppins';}
+  .error-text{color:var(--primary-dark);font-size:13px;margin:-4px 0 14px;text-align:left;width:100%;max-width:340px;}
+  .scroll-form{width:100%;max-width:340px;}
+  .security-note{display:flex;gap:8px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:16px;text-align:left;}
+  .security-note span{font-size:11.5px;color:var(--muted);line-height:1.4;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line);background:#fff;}
+  .topbar-name{font-weight:700;font-size:16px;color:var(--primary);}
+  .topbar-right{display:flex;gap:8px;align-items:center;}
+  .premium-btn{background:linear-gradient(135deg,#FFD700,#FFA500);color:#5a3a00;border:none;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;}
+  .logout{background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:'IBM Plex Mono';}
+
+  #view-discover{flex:1;display:flex;flex-direction:column;padding:18px;max-width:460px;margin:0 auto;width:100%;}
+  .card-stack{position:relative;flex:1;min-height:420px;}
+  .swipe-card{position:absolute;inset:0;border-radius:24px;overflow:hidden;background:var(--card);box-shadow:0 14px 34px rgba(0,0,0,0.12);cursor:grab;transition:transform .25s ease, opacity .25s ease;display:flex;flex-direction:column;}
+  .swipe-card .photo{flex:1;background-size:cover;background-position:center;position:relative;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#FFD3E0,#FF9EBB);}
+  .avatar-fallback{font-size:64px;font-weight:700;color:#fff;}
+  .boost-badge{position:absolute;top:14px;left:14px;background:linear-gradient(135deg,#FFD700,#FFA500);color:#5a3a00;padding:4px 10px;border-radius:14px;font-size:11px;font-weight:700;z-index:4;}
+  .swipe-card .info{padding:16px 18px 20px;}
+  .swipe-card .name{font-size:22px;font-weight:700;}
+  .swipe-card .meta{color:var(--muted);font-size:13px;margin:4px 0 8px;}
+  .swipe-card .bio{font-size:14px;color:var(--text);line-height:1.4;}
+  .stamp{position:absolute;top:24px;padding:6px 14px;border-radius:6px;border:3px solid;font-weight:800;font-size:20px;text-transform:uppercase;opacity:0;transform:rotate(-12deg);z-index:3;}
+  .stamp.like{right:20px;border-color:var(--good);color:var(--good);}
+  .stamp.nope{left:20px;border-color:var(--primary);color:var(--primary);transform:rotate(12deg);}
+  .empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--muted);gap:14px;padding:0 20px;}
+  .swipe-actions{display:flex;justify-content:center;gap:20px;padding-top:18px;}
+  .action-btn{width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(0,0,0,0.15);}
+  .action-btn.nope{background:#fff;border:1.5px solid var(--line);}
+  .action-btn.like{background:var(--primary);}
+  .action-btn.super{background:#4FC3F7;}
+  .action-btn svg{width:24px;height:24px;}
+
+  #match-overlay{position:fixed;inset:0;background:rgba(255,92,141,0.97);z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;}
+  #match-overlay.show{display:flex;}
+  .match-circles{position:relative;height:110px;width:180px;margin-bottom:22px;}
+  .match-circles .c{position:absolute;top:0;width:100px;height:100px;border-radius:50%;background-size:cover;background-position:center;border:4px solid #fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:34px;color:#fff;background-color:#FF9EBB;}
+  .match-circles .c1{left:0;} .match-circles .c2{right:0;}
+  #match-overlay h2{font-weight:800;font-size:34px;color:#fff;margin:0 0 8px;}
+  #match-overlay p{color:rgba(255,255,255,0.9);margin-bottom:26px;}
+  #match-overlay .btn-primary{background:#fff;color:var(--primary);box-shadow:none;max-width:280px;}
+  #match-overlay .btn-secondary{border-color:rgba(255,255,255,0.5);color:#fff;max-width:280px;}
+
+  #view-matches{flex:1;overflow-y:auto;max-width:460px;margin:0 auto;width:100%;}
+  .match-row{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line);cursor:pointer;}
+  .match-avatar{width:52px;height:52px;border-radius:50%;background-size:cover;background-position:center;background-color:#FF9EBB;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;color:#fff;flex-shrink:0;}
+  .match-row .name{font-weight:700;font-size:15px;}
+  .match-row .preview{color:var(--muted);font-size:13px;margin-top:2px;}
+
+  .bottom-nav{display:flex;border-top:1px solid var(--line);background:#fff;max-width:460px;margin:0 auto;width:100%;}
+  .bottom-nav button{flex:1;background:none;border:none;color:var(--muted);padding:12px 0 10px;font-weight:600;font-size:12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:'Poppins';}
+  .bottom-nav button.active{color:var(--primary);}
+  .bottom-nav svg{width:20px;height:20px;}
+
+  #screen-chat .chat-header{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);background:#fff;}
+  #screen-chat .chat-header .back{background:none;border:none;color:var(--text);cursor:pointer;padding:4px;}
+  #screen-chat .chat-header .avatar{width:36px;height:36px;border-radius:50%;background-size:cover;background-position:center;background-color:#FF9EBB;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;}
+  #screen-chat .chat-header .name{font-weight:700;font-size:15px;}
+  #chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;max-width:460px;margin:0 auto;width:100%;}
+  .msg-row{display:flex;}
+  .msg-row.mine{justify-content:flex-end;}
+  .bubble{max-width:72%;padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.4;}
+  .msg-row.mine .bubble{background:var(--primary);color:#fff;border-bottom-right-radius:4px;}
+  .msg-row.theirs .bubble{background:#fff;border:1px solid var(--line);border-bottom-left-radius:4px;}
+  .chat-input-row{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line);background:#fff;max-width:460px;margin:0 auto;width:100%;}
+  .chat-input-row input{flex:1;background:#fff;border:1.5px solid var(--line);color:var(--text);padding:11px 16px;border-radius:24px;outline:none;font-family:'Poppins';font-size:14px;}
+  .send-btn{width:42px;height:42px;border-radius:50%;background:var(--primary);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .send-btn svg{width:18px;height:18px;}
+  .empty-chat{color:var(--muted);text-align:center;font-size:13px;margin:auto;padding:0 40px;}
+
+  #photo-upload-row{padding:16px;background:#fff;border-bottom:1px solid var(--line);}
+
+  #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 18px;border-radius:24px;font-size:13px;z-index:60;opacity:0;transition:opacity .3s;pointer-events:none;max-width:85%;text-align:center;}
+  #toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<div id="luma-app">
+
+  <!-- BACKEND URL CONFIG (эхний удаад л харагдана) -->
+  <div class="screen active" id="screen-config">
+    <div class="card-box">
+      <div class="logo" style="font-size:28px;">Luma 💗 Тохиргоо</div>
+      <p style="color:var(--muted);font-size:13px;margin:10px 0 20px;">
+        Энэ сайт таны Render/бусад дээр deploy хийсэн Luma backend рүү холбогдоно.
+        Backend-ийн URL-ээ доор оруулна уу (жишээ: <span class="mono">https://luma-backend.onrender.com/api</span>)
+      </p>
+      <div class="field"><input id="config-api-url" placeholder="https://your-backend.onrender.com/api"/></div>
+      <button class="btn-primary" style="max-width:none;" onclick="saveApiConfig()">Хадгалаад үргэлжлүүлэх</button>
+      <div class="error-text" id="config-error" style="max-width:none;"></div>
+    </div>
+  </div>
+
+  <!-- AUTH -->
+  <div class="screen" id="screen-auth">
+    <div class="logo">Luma 💗</div>
+    <div class="tagline">Танихгүй хос → таарсан хос</div>
+    <div class="auth-toggle">
+      <button id="tab-login" class="active" onclick="switchAuthTab('login')">Нэвтрэх</button>
+      <button id="tab-register" onclick="switchAuthTab('register')">Бүртгүүлэх</button>
+    </div>
+    <div class="scroll-form">
+      <div id="form-login">
+        <div class="security-note"><span>🔒 Нууц үг сервер талд bcrypt-аар шифрлэгдэж хадгалагдана.</span></div>
+        <div class="field"><label>Имэйл</label><input id="login-email" placeholder="жишээ: bataa@mail.com"/></div>
+        <div class="field"><label>Нууц үг</label><input id="login-password" type="password" placeholder="••••••••"/></div>
+        <div class="error-text" id="login-error"></div>
+        <button class="btn-primary" onclick="handleLogin()">Нэвтрэх</button>
+      </div>
+      <div id="form-register" style="display:none;">
+        <div class="field"><label>Имэйл</label><input id="reg-email" placeholder="жишээ: bataa@mail.com"/></div>
+        <div class="field"><label>Хэрэглэгчийн нэр</label><input id="reg-username" placeholder="username"/></div>
+        <div class="field"><label>Нууц үг</label><input id="reg-password" type="password" placeholder="дор хаяж 8 тэмдэгт"/></div>
+        <div class="error-text" id="register-error"></div>
+        <button class="btn-primary" id="register-btn" onclick="handleRegister()">Бүртгүүлж эхлэх</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE SETUP (шинэ хэрэглэгчид зориулав) -->
+  <div class="screen" id="screen-profile-setup">
+    <div style="padding:56px 28px 32px;display:flex;flex-direction:column;align-items:center;">
+      <div class="logo" style="font-size:28px;">Профайлаа үүсгэе</div>
+      <div class="scroll-form" style="margin-top:20px;">
+        <div class="field"><label>Нас</label><input id="ps-age" type="number" min="18" max="99" placeholder="18+"/></div>
+        <div class="field"><label>Хот</label><input id="ps-city" placeholder="Улаанбаатар"/></div>
+        <div class="field"><label>Товч танилцуулга</label><textarea id="ps-bio" rows="2" placeholder="Өөрийнхөө тухай..."></textarea></div>
+        <div class="field"><label>Юу хайж байгаа вэ</label><input id="ps-goal" placeholder="жишээ: Урт хугацааны харилцаа"/></div>
+        <div class="error-text" id="profile-setup-error"></div>
+        <button class="btn-primary" onclick="handleCreateProfile()">Үргэлжлүүлэх</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHOTO SETUP -->
+  <div class="screen" id="screen-photo-setup">
+    <div style="padding:56px 28px 32px;display:flex;flex-direction:column;align-items:center;">
+      <div class="logo" style="font-size:28px;">Зураг нэмэх 📸</div>
+      <div class="scroll-form" style="margin-top:20px;text-align:center;">
+        <input type="file" id="photo-file-input" accept="image/*" style="margin-bottom:16px;"/>
+        <div class="error-text" id="photo-setup-error"></div>
+        <button class="btn-primary" onclick="handlePhotoUpload()">Зураг оруулаад дуусгах</button>
+        <button class="btn-secondary" onclick="skipPhotoUpload()">Одоохондоо алгасах</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="screen" id="screen-main" style="flex:1;">
+    <div class="topbar">
+      <div class="topbar-name" id="topbar-name"></div>
+      <div class="topbar-right">
+        <button class="premium-btn" onclick="startPremiumCheckout()">✨ Premium</button>
+        <button class="logout" onclick="handleLogout()">ГАРАХ</button>
+      </div>
+    </div>
+    <div id="view-discover">
+      <div class="card-stack" id="card-stack"></div>
+      <div class="swipe-actions">
+        <button class="action-btn nope" onclick="programmaticSwipe('PASS')"><svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.4"><path d="M6 6L18 18M18 6L6 18"/></svg></button>
+        <button class="action-btn super" onclick="programmaticSwipe('SUPERLIKE')"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2L14.5 8.5L21 9.5L16.5 14L17.5 21L12 17.5L6.5 21L7.5 14L3 9.5L9.5 8.5Z"/></svg></button>
+        <button class="action-btn like" onclick="programmaticSwipe('LIKE')"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 21C12 21 3 15 3 9C3 6 5.3 4 8 4C9.8 4 11.4 5 12 6.5C12.6 5 14.2 4 16 4C18.7 4 21 6 21 9C21 15 12 21 12 21Z"/></svg></button>
+      </div>
+    </div>
+    <div id="view-matches" style="display:none;"></div>
+    <div class="bottom-nav">
+      <button class="active" id="nav-discover" onclick="switchMainTab('discover')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="3"/></svg>Discover</button>
+      <button id="nav-matches" onclick="switchMainTab('matches')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21C12 21 3 15 3 9C3 6 5.3 4 8 4C9.8 4 11.4 5 12 6.5C12.6 5 14.2 4 16 4C18.7 4 21 6 21 9C21 15 12 21 12 21Z"/></svg>Matches</button>
+      <button id="nav-liked" onclick="switchMainTab('liked')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L14.5 8.5L21 9.5L16.5 14L17.5 21L12 17.5L6.5 21L7.5 14L3 9.5L9.5 8.5Z"/></svg>Лайкууд ✨</button>
+    </div>
+    <div id="match-overlay">
+      <div class="match-circles"><div class="c c1" id="match-avatar-1"></div><div class="c c2" id="match-avatar-2"></div></div>
+      <h2>It's a Match!</h2><p id="match-text"></p>
+      <button class="btn-primary" onclick="closeMatchOverlay(true)">Чатлах</button>
+      <button class="btn-secondary" onclick="closeMatchOverlay(false)">Үргэлжлүүлэх</button>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="screen" id="screen-chat">
+    <div class="chat-header">
+      <button class="back" onclick="closeChatScreen()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18L9 12L15 6"/></svg></button>
+      <div class="avatar" id="chat-header-avatar"></div>
+      <div class="name" id="chat-header-name"></div>
+    </div>
+    <div id="chat-messages"></div>
+    <div class="chat-input-row">
+      <input id="chat-input" placeholder="Зурвас бичих..." onkeydown="if(event.key==='Enter') sendChatMessage()"/>
+      <button class="send-btn" onclick="sendChatMessage()"><svg viewBox="0 0 24 24" fill="#fff"><path d="M3 11L20 3L13 20L11 13L3 11Z"/></svg></button>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+</div>
+
+<script>
+(function(){
+  // ==========================================================
+  // ЧУХАЛ: Backend URL-ийг хэрэглэгч тохиргооны дэлгэц дээр өөрөө оруулна
+  // (localStorage-д хадгалагдана — энэ жинхэнэ standalone сайт тул зөвшөөрөгдөнө)
+  // ==========================================================
+  let API_BASE = localStorage.getItem('luma_api_base') || '';
+  let token = localStorage.getItem('luma_token') || null;
+  let myUserId = localStorage.getItem('luma_user_id') || null;
+
+  let discoverList = [];
+  let currentCardIndex = 0;
+  let currentMatchKey = null; // match.id
+  let currentMatchOther = null;
+  let chatPollTimer = null;
+  let pendingEmail = '', pendingPassword = ''; // register->login дамжуулахад ашиглана
+
+  // ---------- API helper ----------
+  async function api(path, { method = 'GET', body, isFormData = false } = {}) {
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    if (!isFormData) headers['Content-Type'] = 'application/json';
+
+    const response = await fetch(`${API_BASE}${path}`, {
+      method,
+      headers,
+      body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
+    });
+
+    let data = null;
+    try { data = await response.json(); } catch (e) { /* body хоосон байж болно */ }
+
+    if (!response.ok) {
+      const error = new Error(data?.message || 'Алдаа гарлаа');
+      error.status = response.status;
+      error.data = data;
+      throw error;
+    }
+    return data;
+  }
+
+  function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2600); }
+  function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str||''; return d.innerHTML; }
+  function initialsOf(name){ return (name||'?').trim().charAt(0).toUpperCase(); }
+  function avatarStyle(url){ return url ? `background-image:url('${url.replace(/'/g,"")}')` : ''; }
+  function mainPhotoOf(user){ return user.photos?.find(p=>p.isMain)?.url || user.photos?.[0]?.url || ''; }
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // ---------- CONFIG SCREEN ----------
+  window.saveApiConfig = function(){
+    const url = document.getElementById('config-api-url').value.trim().replace(/\/$/, '');
+    const errEl = document.getElementById('config-error');
+    if(!url){ errEl.textContent='Backend URL-ээ оруулна уу'; return; }
+    API_BASE = url;
+    localStorage.setItem('luma_api_base', API_BASE);
+    boot();
+  };
+
+  // ---------- BOOT ----------
+  async function boot(){
+    if(!API_BASE){ showScreen('screen-config'); return; }
+    if(!token){ showScreen('screen-auth'); return; }
+    // Token байгаа эсэхийг шалгах маягаар профайл татаж үзнэ
+    try {
+      await api('/profile');
+      enterMainApp();
+    } catch (err) {
+      if(err.status === 404){
+        showScreen('screen-profile-setup'); // токен хүчинтэй ч профайл байхгүй
+      } else {
+        // токен хүчингүй бол дахин нэвтрэх
+        token = null; myUserId = null;
+        localStorage.removeItem('luma_token'); localStorage.removeItem('luma_user_id');
+        showScreen('screen-auth');
+      }
+    }
+  }
+
+  window.switchAuthTab = function(tab){
+    document.getElementById('tab-login').classList.toggle('active', tab==='login');
+    document.getElementById('tab-register').classList.toggle('active', tab==='register');
+    document.getElementById('form-login').style.display = tab==='login'?'block':'none';
+    document.getElementById('form-register').style.display = tab==='register'?'block':'none';
+  };
+
+  window.handleLogin = async function(){
+    const email = document.getElementById('login-email').value.trim().toLowerCase();
+    const password = document.getElementById('login-password').value;
+    const errEl = document.getElementById('login-error'); errEl.textContent='';
+    if(!email||!password){ errEl.textContent='Имэйл болон нууц үгээ оруулна уу'; return; }
+    try {
+      const data = await api('/auth/login', { method:'POST', body:{ email, password } });
+      token = data.token; myUserId = data.user.id;
+      localStorage.setItem('luma_token', token); localStorage.setItem('luma_user_id', myUserId);
+      boot();
+    } catch (err) { errEl.textContent = err.message; }
+  };
+
+  window.handleRegister = async function(){
+    const email = document.getElementById('reg-email').value.trim().toLowerCase();
+    const username = document.getElementById('reg-username').value.trim();
+    const password = document.getElementById('reg-password').value;
+    const errEl = document.getElementById('register-error'); errEl.textContent='';
+    if(!email||!username||!password){ errEl.textContent='Бүх талбарыг бөглөнө үү'; return; }
+
+    const btn = document.getElementById('register-btn');
+    btn.disabled=true; btn.textContent='Түр хүлээнэ үү...';
+    try {
+      await api('/auth/register', { method:'POST', body:{ email, username, password } });
+      // Register токен буцаадаггүй тул шууд дараа нь login дуудна
+      const data = await api('/auth/login', { method:'POST', body:{ email, password } });
+      token = data.token; myUserId = data.user.id;
+      localStorage.setItem('luma_token', token); localStorage.setItem('luma_user_id', myUserId);
+      showScreen('screen-profile-setup');
+    } catch (err) {
+      errEl.textContent = err.message;
+    } finally {
+      btn.disabled=false; btn.textContent='Бүртгүүлж эхлэх';
+    }
+  };
+
+  window.handleCreateProfile = async function(){
+    const age = parseInt(document.getElementById('ps-age').value, 10);
+    const city = document.getElementById('ps-city').value.trim();
+    const bio = document.getElementById('ps-bio').value.trim();
+    const relationshipGoal = document.getElementById('ps-goal').value.trim();
+    const errEl = document.getElementById('profile-setup-error'); errEl.textContent='';
+    if(!age || age < 18){ errEl.textContent='Нас 18-аас дээш байх ёстой'; return; }
+    try {
+      await api('/profile', { method:'POST', body:{ age, city, bio, relationshipGoal } });
+      showScreen('screen-photo-setup');
+    } catch (err) { errEl.textContent = err.message; }
+  };
+
+  window.handlePhotoUpload = async function(){
+    const fileInput = document.getElementById('photo-file-input');
+    const errEl = document.getElementById('photo-setup-error'); errEl.textContent='';
+    if(!fileInput.files[0]){ errEl.textContent='Эхлээд зураг сонгоно уу'; return; }
+    const formData = new FormData();
+    formData.append('image', fileInput.files[0]);
+    try {
+      await api('/upload/photo', { method:'POST', body: formData, isFormData:true });
+      enterMainApp();
+    } catch (err) { errEl.textContent = err.message; }
+  };
+  window.skipPhotoUpload = function(){ enterMainApp(); };
+
+  window.handleLogout = function(){
+    token=null; myUserId=null;
+    localStorage.removeItem('luma_token'); localStorage.removeItem('luma_user_id');
+    if(chatPollTimer) clearInterval(chatPollTimer);
+    showScreen('screen-auth');
+  };
+
+  async function enterMainApp(){
+    showScreen('screen-main');
+    try {
+      const profile = await api('/profile');
+      document.getElementById('topbar-name').textContent = profile.user.username;
+    } catch(e){}
+    loadDiscoverFeed();
+    checkUrlParamsForBillingRedirect();
+  }
+
+  function checkUrlParamsForBillingRedirect(){
+    const params = new URLSearchParams(window.location.search);
+    if(params.get('premium')==='success') showToast('🎉 Premium амжилттай идэвхжлээ!');
+    if(params.get('boost')==='success') showToast('🚀 Boost идэвхжлээ! 30 минутын турш эхэнд гарна.');
+    if(params.get('premium') || params.get('boost')) window.history.replaceState({}, '', window.location.pathname);
+  }
+
+  // ---------- MAIN NAV ----------
+  window.switchMainTab = function(tab){
+    document.getElementById('nav-discover').classList.toggle('active', tab==='discover');
+    document.getElementById('nav-matches').classList.toggle('active', tab==='matches');
+    document.getElementById('nav-liked').classList.toggle('active', tab==='liked');
+    document.getElementById('view-discover').style.display = tab==='discover'?'flex':'none';
+    document.getElementById('view-matches').style.display = (tab==='matches'||tab==='liked')?'block':'none';
+    if(tab==='matches') loadMatchesList();
+    if(tab==='liked') loadLikedMeList();
+  };
+
+  // ---------- DISCOVER ----------
+  async function loadDiscoverFeed(){
+    const stack = document.getElementById('card-stack');
+    stack.innerHTML = `<div class="empty-state"><div class="mono">Ачааллаж байна...</div></div>`;
+    try {
+      discoverList = await api('/discovery');
+      currentCardIndex = 0;
+      renderCardStack();
+    } catch (err) {
+      stack.innerHTML = `<div class="empty-state">Алдаа: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  function renderCardStack(){
+    const stack = document.getElementById('card-stack');
+    stack.innerHTML = '';
+    if(currentCardIndex >= discoverList.length){
+      stack.innerHTML = `<div class="empty-state"><div style="font-size:40px;">💔</div><div>Одоогоор шинэ хүн алга.</div>
+        <button class="btn-secondary" style="max-width:200px;" onclick="loadDiscoverFeed()">Дахин ачаалах</button></div>`;
+      return;
+    }
+    for(let i=Math.min(currentCardIndex+1, discoverList.length-1); i>=currentCardIndex; i--){
+      const u = discoverList[i];
+      const photoUrl = mainPhotoOf(u);
+      const card = document.createElement('div');
+      card.className='swipe-card';
+      card.style.zIndex = 10-(i-currentCardIndex);
+      card.style.transform = i===currentCardIndex ? 'none' : 'scale(0.96) translateY(10px)';
+      card.dataset.index = i;
+      card.innerHTML = `
+        <div class="photo" style="${avatarStyle(photoUrl)}">
+          ${u.isBoosted ? '<div class="boost-badge">🚀 Boosted</div>' : ''}
+          ${photoUrl?'':`<div class="avatar-fallback">${initialsOf(u.username)}</div>`}
+          <div class="stamp like">LIKE</div><div class="stamp nope">NOPE</div>
+        </div>
+        <div class="info">
+          <div class="name">${escapeHtml(u.username)}${u.profile?.age?', '+u.profile.age:''}</div>
+          <div class="meta">${escapeHtml(u.profile?.city||'')}${u.profile?.relationshipGoal?' · '+escapeHtml(u.profile.relationshipGoal):''}</div>
+          <div class="bio">${escapeHtml(u.profile?.bio||'')}</div>
+        </div>`;
+      if(i===currentCardIndex) attachDrag(card,u);
+      stack.appendChild(card);
+    }
+  }
+
+  function attachDrag(card,user){
+    let startX=0,startY=0,dx=0,dragging=false;
+    const likeStamp=card.querySelector('.stamp.like'), nopeStamp=card.querySelector('.stamp.nope');
+    function down(x,y){ dragging=true; startX=x; startY=y; card.style.transition='none'; }
+    function move(x,y){ if(!dragging) return; dx=x-startX; const dy=y-startY;
+      card.style.transform=`translate(${dx}px, ${dy}px) rotate(${dx/18}deg)`;
+      likeStamp.style.opacity=Math.max(0,Math.min(1,dx/80)); nopeStamp.style.opacity=Math.max(0,Math.min(1,-dx/80)); }
+    function up(){ if(!dragging) return; dragging=false; card.style.transition='transform .25s ease, opacity .25s ease';
+      if(dx>100) finishSwipe(card,user,'LIKE'); else if(dx<-100) finishSwipe(card,user,'PASS');
+      else { card.style.transform='none'; likeStamp.style.opacity=0; nopeStamp.style.opacity=0; } dx=0; }
+    card.addEventListener('mousedown', e=>down(e.clientX,e.clientY));
+    window.addEventListener('mousemove', e=>move(e.clientX,e.clientY));
+    window.addEventListener('mouseup', up);
+    card.addEventListener('touchstart', e=>down(e.touches[0].clientX,e.touches[0].clientY), {passive:true});
+    card.addEventListener('touchmove', e=>move(e.touches[0].clientX,e.touches[0].clientY), {passive:true});
+    card.addEventListener('touchend', up);
+  }
+
+  window.programmaticSwipe = function(action){
+    const stack=document.getElementById('card-stack');
+    const card=stack.querySelector(`.swipe-card[data-index="${currentCardIndex}"]`);
+    if(!card||currentCardIndex>=discoverList.length) return;
+    const user=discoverList[currentCardIndex];
+    card.style.transition='transform .25s ease, opacity .25s ease';
+    finishSwipe(card,user,action);
+  };
+
+  async function finishSwipe(card,user,action){
+    const direction = action==='PASS' ? -1 : 1;
+    card.style.transform = `translate(${500*direction}px,-40px) rotate(${24*direction}deg)`;
+    card.style.opacity='0';
+    await recordSwipe(user,action);
+    currentCardIndex++;
+    setTimeout(renderCardStack,200);
+  }
+
+  async function recordSwipe(targetUser, action){
+    try {
+      const result = await api('/swipe', { method:'POST', body:{ targetUserId: targetUser.id, action } });
+      if(result.message === 'MATCH 💗'){
+        showMatchOverlay(result.otherUser, result.match.id);
+      }
+    } catch (err) {
+      if(err.status === 402){
+        showToast(err.message);
+      } else {
+        console.error('Swipe error', err);
+      }
+    }
+  }
+
+  function showMatchOverlay(otherUser, matchId){
+    currentMatchOther=otherUser; currentMatchKey=matchId;
+    const c1=document.getElementById('match-avatar-1'), c2=document.getElementById('match-avatar-2');
+    c1.textContent=initialsOf(document.getElementById('topbar-name').textContent);
+    c2.style.cssText=avatarStyle(mainPhotoOf(otherUser)); c2.textContent=mainPhotoOf(otherUser)?'':initialsOf(otherUser.username);
+    document.getElementById('match-text').textContent = `Та ${otherUser.username}-тай таарлаа.`;
+    document.getElementById('match-overlay').classList.add('show');
+  }
+  window.closeMatchOverlay = function(goToChat){
+    document.getElementById('match-overlay').classList.remove('show');
+    if(goToChat && currentMatchOther) openChatScreen(currentMatchOther, currentMatchKey);
+  };
+
+  // ---------- MATCHES LIST ----------
+  async function loadMatchesList(){
+    const view=document.getElementById('view-matches');
+    view.innerHTML=`<div class="empty-state" style="padding:60px 20px;"><div class="mono">Ачааллаж байна...</div></div>`;
+    try {
+      const matches = await api('/matches');
+      if(matches.length===0){
+        view.innerHTML = `<div class="empty-state" style="padding:60px 20px;"><div style="font-size:36px;">💗</div><div>Одоогоор match алга. Swipe хийж эхэлээрэй!</div></div>`;
+        return;
+      }
+      view.innerHTML='';
+      for(const m of matches){
+        const row=document.createElement('div'); row.className='match-row';
+        row.onclick=()=>openChatScreen(m.otherUser, m.id);
+        row.innerHTML = `<div class="match-avatar" style="${avatarStyle(mainPhotoOf(m.otherUser))}">${mainPhotoOf(m.otherUser)?'':initialsOf(m.otherUser.username)}</div>
+          <div><div class="name">${escapeHtml(m.otherUser.username)}</div><div class="preview">Чат нээх →</div></div>`;
+        view.appendChild(row);
+      }
+    } catch (err) {
+      view.innerHTML = `<div class="empty-state">Алдаа: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  // ---------- "ХЭН НАМАЙГ ЛАЙК ДАРСАН" (Premium) ----------
+  async function loadLikedMeList(){
+    const view=document.getElementById('view-matches');
+    view.innerHTML=`<div class="empty-state" style="padding:60px 20px;"><div class="mono">Ачааллаж байна...</div></div>`;
+    try {
+      const likes = await api('/discovery/liked-me');
+      if(likes.length===0){
+        view.innerHTML = `<div class="empty-state" style="padding:60px 20px;">Одоогоор хэн ч лайк дараагүй байна.</div>`;
+        return;
+      }
+      view.innerHTML='';
+      for(const l of likes){
+        const row=document.createElement('div'); row.className='match-row';
+        row.innerHTML = `<div class="match-avatar" style="${avatarStyle(mainPhotoOf(l.fromUser))}">${mainPhotoOf(l.fromUser)?'':initialsOf(l.fromUser.username)}</div>
+          <div><div class="name">${escapeHtml(l.fromUser.username)} ${l.action==='SUPERLIKE'?'⭐':''}</div><div class="preview">Discover дэлгэц дээр swipe хийж match хийгээрэй</div></div>`;
+        view.appendChild(row);
+      }
+    } catch (err) {
+      if(err.status === 402){
+        view.innerHTML = `<div class="empty-state" style="padding:60px 20px;">
+          <div style="font-size:36px;">✨</div>
+          <div>${escapeHtml(err.message)}</div>
+          <button class="btn-primary" style="max-width:200px;" onclick="startPremiumCheckout()">Premium авах</button>
+        </div>`;
+      } else {
+        view.innerHTML = `<div class="empty-state">Алдаа: ${escapeHtml(err.message)}</div>`;
+      }
+    }
+  }
+
+  // ---------- BILLING ----------
+  window.startPremiumCheckout = async function(){
+    try {
+      const data = await api('/billing/checkout/premium', { method:'POST' });
+      window.location.href = data.checkoutUrl; // Stripe Checkout руу шилжинэ
+    } catch (err) { showToast(err.message); }
+  };
+
+  // ---------- CHAT ----------
+  function openChatScreen(otherUser, matchId){
+    currentMatchOther=otherUser; currentMatchKey=matchId;
+    document.getElementById('chat-header-name').textContent = otherUser.username;
+    const av=document.getElementById('chat-header-avatar');
+    const photoUrl = mainPhotoOf(otherUser);
+    av.style.cssText=avatarStyle(photoUrl); av.textContent=photoUrl?'':initialsOf(otherUser.username);
+    showScreen('screen-chat');
+    renderChatMessages();
+    if(chatPollTimer) clearInterval(chatPollTimer);
+    chatPollTimer = setInterval(renderChatMessages, 3000);
+  }
+  window.closeChatScreen = function(){
+    if(chatPollTimer){ clearInterval(chatPollTimer); chatPollTimer=null; }
+    showScreen('screen-main');
+    loadMatchesList();
+  };
+
+  async function renderChatMessages(){
+    try {
+      const messages = await api(`/messages/${currentMatchKey}`);
+      const container = document.getElementById('chat-messages');
+      const wasAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 30;
+      if(messages.length===0){ container.innerHTML=`<div class="empty-chat">Хараахан зурвас алга. Эхний "сайн уу" гэдгээ бичээрэй 👋</div>`; return; }
+      container.innerHTML = messages.map(m=>`
+        <div class="msg-row ${m.senderId===myUserId?'mine':'theirs'}"><div class="bubble">${escapeHtml(m.text)}</div></div>`).join('');
+      if(wasAtBottom || messages[messages.length-1].senderId===myUserId) container.scrollTop=container.scrollHeight;
+    } catch (err) { console.error('Chat load error', err); }
+  }
+
+  window.sendChatMessage = async function(){
+    const input=document.getElementById('chat-input');
+    const text=input.value.trim();
+    if(!text) return;
+    input.value='';
+    try {
+      await api('/messages', { method:'POST', body:{ matchId: currentMatchKey, text } });
+      renderChatMessages();
+    } catch (err) { showToast(err.message); }
+  };
+
+  boot();
+})();
+</script>
+</body>
+</html>
